@@ -35,6 +35,12 @@ public class UpdateData {
             //Run the query
             int rowEffected = statement.executeUpdate(query) ;
 
+            if(rowEffected > 0) {
+                System.out.println("The data is Updated successfully!");
+            }else{
+                System.out.println("The data is not Updated!");
+            }
+
             //Now retrieve all the data from the table
             String selectQuery = "SELECT * FROM students" ;
             ResultSet resultSet = statement.executeQuery(selectQuery) ;
