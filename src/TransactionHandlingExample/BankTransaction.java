@@ -48,16 +48,19 @@ public class BankTransaction {
             //now,create a preparedStatement for both the queries
             PreparedStatement creditStatement = connection.prepareStatement(creditQuery) ;
             PreparedStatement debitStatement = connection.prepareStatement(debitQuery) ;
-
+            
+            //Set the values of placeholders 
             creditStatement.setDouble(1 , amount) ;
             creditStatement.setInt(2, toAccountNumber) ;
 
             debitStatement.setDouble(1 , amount) ;
             debitStatement.setInt(2, fromAccountNumber) ;
 
+            //Execute both query 
             creditStatement.executeUpdate() ;
             debitStatement.executeUpdate() ;
 
+            //If there is no problem to make transaction then commit other wise rollback
             if(isSafeToPerformOperation(connection , amount , fromAccountNumber)) {
                 connection.commit();
                 System.out.println("Transaction successful!");
@@ -65,33 +68,50 @@ public class BankTransaction {
                 connection.rollback();
                 System.out.println("Transaction Failed!");
             }
+
+            //Close all the connections with data base
+            connection.close() ;
+            debitStatement.close() ;
+            creditStatement.close();
+            scanner.close() ;
+
         }catch(SQLException e) {
             System.out.println(e.getMessage());
         }
     }
 
     private static boolean isSafeToPerformOperation(Connection connection , double debitAmount , int fromAccountNumber) {
+        //if the amount is negative then we can't make the transaction
         if(debitAmount < 0) {
             return false ;
         }
 
         try {
+            //Create a general query to find the balance of the account 
             String query = "SELECT balance FROM Accounts WHERE account_number = ? " ;
+
+            //create preparedStatement 
             PreparedStatement preparedStatement = connection.prepareStatement(query) ;
 
+            //set the values of placeholder
             preparedStatement.setInt(1 , fromAccountNumber);
 
+            //result set to store the result of executeQuery() method
             ResultSet resultSet = preparedStatement.executeQuery() ;
 
+            //since it return only one record if the account is present
             if(resultSet.next()) {
                 double currentBalance = resultSet.getDouble("balance") ;
-                return currentBalance >= debitAmount ;
+                return currentBalance >= debitAmount ; // compare with balance with debit amount
             }
 
+            //Close statement and resultSet
+            resultSet.close() ;
+            preparedStatement.close() ;
         }catch(SQLException e) {
             System.out.println(e.getMessage());
         }
 
-        return false ;
+        return false ; // we can't make transaction
     }
 }

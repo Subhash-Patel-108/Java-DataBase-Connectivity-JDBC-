@@ -99,6 +99,7 @@ public class BatchProcessing {
             connection.close() ;
             preparedStatement.close();
             resultSet.close();
+            scanner.close();
         }catch(SQLException e) {
             System.out.println(e.getMessage());
         }
